@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talking Blob - Interactive Web Experience</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            cursor: none; /* Hide default cursor for better experience */
+        }
+
+        /* Blob container and positioning */
+        .blob-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        /* Main blob styling */
+        .blob {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            border-radius: 50%;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            animation: blobWiggle 3s ease-in-out infinite;
+        }
+
+        /* Blob wiggle animation */
+        @keyframes blobWiggle {
+            0%, 100% {
+                transform: scale(1) rotate(0deg);
+                border-radius: 50%;
+            }
+            25% {
+                transform: scale(1.05, 0.95) rotate(2deg);
+                border-radius: 60% 40% 50% 50%;
+            }
+            50% {
+                transform: scale(0.95, 1.05) rotate(-2deg);
+                border-radius: 50% 60% 40% 50%;
+            }
+            75% {
+                transform: scale(1.02, 0.98) rotate(1deg);
+                border-radius: 40% 50% 60% 50%;
+            }
+        }
+
+        /* Hover effects */
+        .blob:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(45deg, #ff8e8e, #ffb84d);
+        }
+
+        /* Eyes styling */
+        .eye {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #000;
+            border-radius: 50%;
+            top: 35px;
+        }
+
+        .eye.left {
+            left: 30px;
+        }
+
+        .eye.right {
+            right: 30px;
+        }
+
+        /* Eye shine effect */
+        .eye::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+        }
+
+        /* Speech bubble styling */
+        .speech-bubble {
+            position: absolute;
+            background: white;
+            border-radius: 20px;
+            padding: 15px 20px;
+            max-width: 200px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            line-height: 1.4;
+            opacity: 0;
+            transform: translateY(20px) scale(0.8);
+            transition: all 0.3s ease;
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        /* Speech bubble arrow */
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid white;
+        }
+
+        /* Speech bubble animation */
+        .speech-bubble.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Position speech bubble above blob */
+        .speech-bubble {
+            bottom: 140px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px) scale(0.8);
+        }
+
+        .speech-bubble.show {
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .blob {
+                width: 100px;
+                height: 100px;
+            }
+
+            .eye {
+                width: 16px;
+                height: 16px;
+                top: 30px;
+            }
+
+            .eye.left {
+                left: 25px;
+            }
+
+            .eye.right {
+                right: 25px;
+            }
+
+            .speech-bubble {
+                max-width: 150px;
+                font-size: 12px;
+                padding: 12px 16px;
+            }
+        }
+
+        /* Instructions text */
+        .instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            font-size: 16px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            z-index: 50;
+        }
+
+        /* Custom cursor for better UX */
+        .custom-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            transition: all 0.1s ease;
+            mix-blend-mode: difference;
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom cursor element -->
+    <div class="custom-cursor"></div>
+
+    <!-- Blob container -->
+    <div class="blob-container">
+        <div class="blob">
+            <div class="eye left"></div>
+            <div class="eye right"></div>
+        </div>
+        <div class="speech-bubble"></div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+        Move your mouse to make the blob follow you! Click on the blob to hear what it has to say.
+    </div>
+
+    <script>
+        // Array of funny phrases for the blob to say
+        const funnyPhrases = [
+            "Hey! Stop poking me!",
+            "Blob-tastic!",
+            "I'm just a blob, what do you want?",
+            "Did you know blobs love cookies?",
+            "Keep clicking, I dare you!",
+            "Ooh, that tickles!",
+            "Blobby McBlobface at your service.",
+            "I'm not just a pretty face.",
+            "Blob life is the best life!",
+            "Have you ever seen a blob dance?",
+            "I'm feeling quite blobulous today!",
+            "Click me again, I dare you!"
+        ];
+
+        // DOM elements
+        const blobContainer = document.querySelector('.blob-container');
+        const blob = document.querySelector('.blob');
+        const speechBubble = document.querySelector('.speech-bubble');
+        const customCursor = document.querySelector('.custom-cursor');
+
+        // Variables for mouse following
+        let mouseX = 0;
+        let mouseY = 0;
+        let blobX = window.innerWidth / 2;
+        let blobY = window.innerHeight / 2;
+        let isFollowing = false;
+
+        // Initialize the page
+        function init() {
+            // Set initial blob position
+            updateBlobPosition();
+            
+            // Add event listeners
+            document.addEventListener('mousemove', handleMouseMove);
+            blob.addEventListener('click', handleBlobClick);
+            document.addEventListener('mouseenter', () => isFollowing = true);
+            document.addEventListener('mouseleave', () => isFollowing = false);
+            
+            // Start animation loop
+            animate();
+        }
+
+        // Handle mouse movement
+        function handleMouseMove(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // Update custom cursor position
+            customCursor.style.left = mouseX + 'px';
+            customCursor.style.top = mouseY + 'px';
+        }
+
+        // Update blob position with smooth following
+        function updateBlobPosition() {
+            if (isFollowing) {
+                // Smooth following with easing
+                blobX += (mouseX - blobX) * 0.1;
+                blobY += (mouseY - blobY) * 0.1;
+            }
+            
+            blobContainer.style.left = blobX + 'px';
+            blobContainer.style.top = blobY + 'px';
+        }
+
+        // Handle blob click
+        function handleBlobClick() {
+            // Get random phrase
+            const randomPhrase = funnyPhrases[Math.floor(Math.random() * funnyPhrases.length)];
+            
+            // Update speech bubble text
+            speechBubble.textContent = randomPhrase;
+            
+            // Show speech bubble
+            speechBubble.classList.add('show');
+            
+            // Hide speech bubble after 3 seconds
+            setTimeout(() => {
+                speechBubble.classList.remove('show');
+            }, 3000);
+            
+            // Add click animation
+            blob.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                blob.style.transform = 'scale(1)';
+            }, 150);
+        }
+
+        // Animation loop
+        function animate() {
+            updateBlobPosition();
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', init);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            // Reset blob position if it goes off screen
+            if (blobX > window.innerWidth || blobY > window.innerHeight) {
+                blobX = window.innerWidth / 2;
+                blobY = window.innerHeight / 2;
+            }
+        });
+
+        // Add some personality - random blinking
+        setInterval(() => {
+            const eyes = document.querySelectorAll('.eye');
+            eyes.forEach(eye => {
+                eye.style.transform = 'scaleY(0.1)';
+                setTimeout(() => {
+                    eye.style.transform = 'scaleY(1)';
+                }, 150);
+            });
+        }, 3000 + Math.random() * 2000); // Random interval between 3-5 seconds
+    </script>
+</body>
+</html> 
